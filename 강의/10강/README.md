@@ -350,6 +350,66 @@ public class AopTest { ... }
 
 ## 스프링 AOP 구현 4 - 포인트컷 참조
 
+### 포인트컷 파일 분리
+
+* 포인트컷을 공용으로 사용하기 위해 별도의 외부 클래스에 모아두어도 된다.
+* 참고로 외부에서 호출할 때는 포인트컷의 접근 제어자를 `public`으로 열어두어야 한다.
+
+### 예제
+
+#### Pointcuts
+
+```java
+/**
+ * 포인트컷을 외부에 뺄 수 있다.
+ */
+public class Pointcuts {
+
+    /**
+     * hello.aop.order 패키지와 하위 패키지
+     */
+    @Pointcut("execution(* hello.aop.order..*(..))")
+    public void allOrder() {
+    }
+
+    /**
+     * 타입 패턴이 *Service
+     */
+    @Pointcut("execution(* *..*Service.*(..))")
+    public void allService() {
+    }
+
+    /**
+     * allOrder && allService
+     */
+    @Pointcut("allOrder() && allService()")
+    public void orderAndService() {
+    }
+}
+```
+
+#### AspectV4
+
+```java
+@Slf4j
+@Aspect
+public class AspectV4 {
+
+    /**
+     * 외부 클래스의 포인트컷을 가져오려면 풀 패키지로 작성해야한다.
+     */
+    @Around("hello.aop.order.aop.Pointcuts.allOrder()")
+    public Object doLog(
+            ProceedingJoinPoint joinPoint
+    ) throws Throwable { ... }
+
+    @Around("hello.aop.order.aop.Pointcuts.orderAndService()")
+    public Object doTransaction(
+            ProceedingJoinPoint joinPoint
+    ) throws Throwable { ... }
+}
+```
+
 ## 스프링 AOP 구현 5 - 어드바이스 순서
 
 ## 스프링 AOP 구현 6 - 어드바이스 종류
