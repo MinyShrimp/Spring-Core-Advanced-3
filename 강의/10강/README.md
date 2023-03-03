@@ -222,6 +222,132 @@ public class AspectV2 {
 
 ## 스프링 AOP 구현 3 - 어드바이스 추가
 
+### 어드바이스 추가
+
+앞서 로그를 출력하는 기능에 추가로 트랜잭션을 적용하는 코드도 추가해보자.
+여기서는 진짜 트랜잭션을 실행하는 것은 아니다. 기능이 동작한 것 처럼 로그만 남기겠다.
+
+#### 트랜잭션 기능은 보통 다음과 같이 동작한다.
+
+* 핵심 로직 실행 직전에 트랜잭션을 시작
+* 핵심 로직 실행
+* 핵심 로직 실행에 문제가 없으면 커밋
+* 핵심 로직 실행에 예외가 발생하면 롤백
+
+### 예제
+
+#### AspectV3
+
+```java
+@Slf4j
+@Aspect
+public class AspectV3 {
+
+    /**
+     * hello.aop.order 패키지와 하위 패키지
+     */
+    @Pointcut("execution(* hello.aop.order..*(..))")
+    private void allOrder() {
+    }
+
+    /**
+     * 타입 이름 패턴이 *Service
+     */
+    @Pointcut("execution(* *..*Service.*(..))")
+    private void allService() {
+    }
+
+    /**
+     * hello.aop.order 패키지와 하위 패키지
+     */
+    @Around("allOrder()")
+    public Object doLog(
+            ProceedingJoinPoint joinPoint
+    ) throws Throwable { ... }
+
+    /**
+     * hello.aop.order 패키지와 하위 패키지 +
+     * 타입 이름 패턴이 *Service
+     */
+    @Around("allOrder() && allService()")
+    public Object doTransaction(
+            ProceedingJoinPoint joinPoint
+    ) throws Throwable {
+        Signature signature = joinPoint.getSignature();
+
+        try {
+            log.info("[트랜잭션 시작] {}", signature);
+
+            Object result = joinPoint.proceed();
+
+            log.info("[트랜잭션 커밋] {}", signature);
+            return result;
+        } catch (Exception e) {
+            log.info("[트랜잭션 롤백] {}", signature);
+            throw e;
+        } finally {
+            log.info("[Resource Release] {}", signature);
+        }
+    }
+}
+```
+
+#### AopTest
+
+```java
+@Slf4j
+@Import({AspectV3.class}) // 교체
+@SpringBootTest
+public class AopTest { ... }
+```
+
+#### AOP 적용 결과
+
+* `orderService`
+    * `doLog()`, `doTransaction()` 어드바이스 적용
+* `orderRepository`
+    * `doLog()` 어드바이스 적용
+
+### 실행 로그
+
+![img.png](img.png)
+
+#### success
+
+```
+# Client -> doLog -> doTransaction -> OrderService
+[log] void hello.aop.order.OrderService.orderItem(String)
+[트랜잭션 시작] void hello.aop.order.OrderService.orderItem(String)
+[OrderService] 실행
+
+# -> doLog -> OrderRepository
+[log] String hello.aop.order.OrderRepository.save(String)
+[OrderRepository] 실행
+
+# OrderRepository -> doLog 
+# -> OrderService -> doTrasaction -> doLog -> Client
+[트랜잭션 커밋] void hello.aop.order.OrderService.orderItem(String)
+[Resource Release] void hello.aop.order.OrderService.orderItem(String)
+```
+
+#### exception
+
+```
+# Client -> doLog -> doTransaction -> OrderService
+[log] void hello.aop.order.OrderService.orderItem(String)
+[트랜잭션 시작] void hello.aop.order.OrderService.orderItem(String)
+
+# -> doLog -> OrderRepository
+[OrderService] 실행
+[log] String hello.aop.order.OrderRepository.save(String)
+[OrderRepository] 실행
+
+# OrderRepository -> doLog 
+# -> OrderService -> doTrasaction -> doLog -> Client
+[트랜잭션 롤백] void hello.aop.order.OrderService.orderItem(String)
+[Resource Release] void hello.aop.order.OrderService.orderItem(String)
+```
+
 ## 스프링 AOP 구현 4 - 포인트컷 참조
 
 ## 스프링 AOP 구현 5 - 어드바이스 순서
