@@ -104,7 +104,7 @@ public class MemberServiceImpl implements MemberService {
 @Slf4j
 public class ExecutionTest {
 
-    static final AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
+    final AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
     
     Method helloMethod;
 
@@ -132,6 +132,101 @@ helloMethod = public java.lang.String hello.aop.member.MemberServiceImpl.hello(j
 ```
 
 ## execution - 1
+
+### 문법
+
+```
+[접근제어자]? [반환타입] [선언타입]?[메서드이름]([파라미터]) [예외]?
+```
+
+* 메서드 실행 JoinPoint를 매칭한다.
+* `?`는 생략 가능하다.
+* `*` 패턴을 사용할 수 있다.
+
+### 가장 정확한 포인트컷
+
+```java
+@Test
+void exactMatch() {
+    pointcut.setExpression("execution(public String hello.aop.member.MemberServiceImpl.hello(String))");
+    assertThat(
+            pointcut.matches(helloMethod, MemberServiceImpl.class)
+    ).isTrue();
+}
+```
+
+`MemberServiceImpl.hello(String)` 메서드와 가장 정확하게 매칭되는 표현식이다.
+
+#### 매칭 조건
+
+| 조건     | 내용                                 |
+|--------|------------------------------------|
+| 접근제어자  | public                             |
+| 반환타입   | String                             |
+| 선언타입   | hello.aop.member.MemberServiceImpl |
+| 메서드 이름 | hello                              |
+| 파라미터   | String                             |
+| 예외     | 생략                                 |
+
+### 가장 많이 생략한 포인트 컷
+
+```
+execution(* *(..))
+```
+
+#### 매칭 조건
+
+| 조건     |   내용   |
+|--------|:------:|
+| 접근제어자  |   생략   |
+| 반환타입   |  `*`   |
+| 선언타입   |   생략   |
+| 메서드 이름 |  `*`   |
+| 파라미터   | `(..)` |
+| 예외     |   생략   |
+
+### 메서드 이름 매칭
+
+```
+// 이름이 "hello"와 정확하게 매칭
+execution(* hello(..))
+
+// 이름이 "hel"로 시작하면 매칭
+execution(* hel*(..))
+
+// 이름 중간에 "el"이 있으면 매칭
+execution(* *el*(..))
+```
+
+### 패키지 매칭
+
+```
+// 패키지가 "hello.aop.member"이고 
+// 타입이 "MemberServiceImpl"이며
+// 메서드 이름이 "hello"인 것과 매칭
+execution(* hello.aop.member.MemberServiceImpl.hello(..))
+
+// 패키지가 "hello.aop.member"이고 해당 패키지의 모든 메서드 매칭 
+// 하위 패키지는 포함되지 않는다.
+execution(* hello.aop.member.*.*(..))
+
+// 패키지가 "hello.aop"이고 해당 패키지의 모든 매서드 매칭
+// 하위 패키지는 포함되지 않는다.
+execution(* hello.aop.*.*(..))
+
+// 패키지가 "hello.aop.member"이고 해당 패키지와 하위 패키지의 모든 메서드 매칭
+execution(* hello.aop.member..*.*(..))
+
+// 패키지가 "hello.aop"이고 해당 패키지와 하위 패키지의 모든 메서드 매칭
+execution(* hello.aop..*.*(..))
+```
+
+* `hello.aop.member.*(1).*(2)`
+    * `(1)`: 타입
+    * `(2)`: 메서드 이름
+* `.`, `..`
+    * `.`: 정확하게 해당 위치의 패키지
+    * `..`: 해당 위치의 패키지와 그 하위 패키지도 모두 포함
 
 ## execution - 2
 
