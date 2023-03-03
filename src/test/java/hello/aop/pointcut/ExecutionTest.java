@@ -3,6 +3,8 @@ package hello.aop.pointcut;
 import hello.aop.member.MemberServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 
@@ -54,75 +56,83 @@ public class ExecutionTest {
         ).isTrue();
     }
 
-    @Test
-    void nameMatch() {
-        pointcut.setExpression("execution(* hello(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isTrue();
+    @Nested
+    @DisplayName("메서드 이름 매칭")
+    class MethodNameMatches {
+        @Test
+        void nameMatch() {
+            pointcut.setExpression("execution(* hello(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isTrue();
+        }
+
+        @Test
+        void nameMatchStar1() {
+            pointcut.setExpression("execution(* hel*(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isTrue();
+        }
+
+        @Test
+        void nameMatchStar2() {
+            pointcut.setExpression("execution(* *el*(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isTrue();
+        }
+
+        @Test
+        void nameMatchFalse() {
+            pointcut.setExpression("execution(* non(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isFalse();
+        }
     }
 
-    @Test
-    void nameMatchStar1() {
-        pointcut.setExpression("execution(* hel*(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isTrue();
-    }
+    @Nested
+    @DisplayName("패키지 매칭")
+    class PackageMatches {
+        @Test
+        void packageExactMatch1() {
+            pointcut.setExpression("execution(* hello.aop.member.MemberServiceImpl.hello(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isTrue();
+        }
 
-    @Test
-    void nameMatchStar2() {
-        pointcut.setExpression("execution(* *el*(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isTrue();
-    }
+        @Test
+        void packageExactMatch2() {
+            pointcut.setExpression("execution(* hello.aop.member.*.*(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isTrue();
+        }
 
-    @Test
-    void nameMatchFalse() {
-        pointcut.setExpression("execution(* non(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isFalse();
-    }
+        @Test
+        void packageExactMatchFalse() {
+            pointcut.setExpression("execution(* hello.aop.*.*(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isFalse();
+        }
 
-    @Test
-    void packageExactMatch1() {
-        pointcut.setExpression("execution(* hello.aop.member.MemberServiceImpl.hello(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isTrue();
-    }
+        @Test
+        void packageMatchSubPackage1() {
+            pointcut.setExpression("execution(* hello.aop.member..*.*(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isTrue();
+        }
 
-    @Test
-    void packageExactMatch2() {
-        pointcut.setExpression("execution(* hello.aop.member.*.*(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isTrue();
-    }
-
-    @Test
-    void packageExactMatchFalse() {
-        pointcut.setExpression("execution(* hello.aop.*.*(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isFalse();
-    }
-
-    @Test
-    void packageMatchSubPackage1() {
-        pointcut.setExpression("execution(* hello.aop.member..*.*(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isTrue();
-    }
-
-    @Test
-    void packageMatchSubPackage2() {
-        pointcut.setExpression("execution(* hello.aop..*.*(..))");
-        assertThat(
-                pointcut.matches(helloMethod, MemberServiceImpl.class)
-        ).isTrue();
+        @Test
+        void packageMatchSubPackage2() {
+            pointcut.setExpression("execution(* hello.aop..*.*(..))");
+            assertThat(
+                    pointcut.matches(helloMethod, MemberServiceImpl.class)
+            ).isTrue();
+        }
     }
 }
