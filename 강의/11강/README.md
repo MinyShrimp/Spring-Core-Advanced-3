@@ -37,6 +37,100 @@ AspectJ는 포인트컷을 편리하게 표현하기 위한 특별한 표현식�
 
 ## 예제 만들기
 
+### 예제
+
+#### ClassAop
+
+```java
+/**
+ * Class 단위 AOP 적용을 위해 생성
+ */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ClassAop {
+}
+```
+
+#### MethodAop
+
+```java
+/**
+ * Method 단위 AOP 적용을 위해 생성
+ */
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MethodAop {
+
+    String value();
+}
+```
+
+#### MemberService
+
+```java
+/**
+ * 상속받은 인터페이스의 정보를 얻기 위해 생성
+ */
+public interface MemberService {
+    String hello(String param);
+}
+```
+
+#### MemberServiceImpl
+
+```java
+@ClassAop
+@Component
+public class MemberServiceImpl implements MemberService {
+
+    @Override
+    @MethodAop("test value")
+    public String hello(String param) {
+        return "ok";
+    }
+
+    public String internal(String param) {
+        return "ok";
+    }
+}
+```
+
+#### ExecutionTest
+
+```java
+/**
+ * 포인트컷 지시자 - execution 테스트
+ */
+@Slf4j
+public class ExecutionTest {
+
+    static final AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut();
+    
+    Method helloMethod;
+
+    @BeforeEach
+    public void init() throws NoSuchMethodException {
+        helloMethod = MemberServiceImpl.class.getMethod("hello", String.class);
+    }
+
+    @Test
+    void printMethod() {
+        // public java.lang.String hello.aop.member.MemberServiceImpl.hello(java.lang.String)
+        log.info("helloMethod = {}", helloMethod);
+    }
+}
+```
+
+* `AspectJExpressionPointcut`
+    * 포인트컷 표현식을 처리해주는 클래스
+    * 상위에 `Pointcut` 인터페이스를 가진다.
+
+### 실행 결과
+
+```
+helloMethod = public java.lang.String hello.aop.member.MemberServiceImpl.hello(java.lang.String)
+```
+
 ## execution - 1
 
 ## execution - 2
