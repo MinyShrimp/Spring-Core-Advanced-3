@@ -143,6 +143,10 @@ helloMethod = public java.lang.String hello.aop.member.MemberServiceImpl.hello(j
 * `?`는 생략 가능하다.
 * `*` 패턴을 사용할 수 있다.
 
+### 예제
+
+[ExecutionTest.java](../../src/test/java/hello/aop/pointcut/ExecutionTest.java)
+
 ### 가장 정확한 포인트컷
 
 ```java
@@ -229,6 +233,33 @@ execution(* hello.aop..*.*(..))
     * `..`: 해당 위치의 패키지와 그 하위 패키지도 모두 포함
 
 ## execution - 2
+
+### 예제
+
+[ExecutionTest.java](../../src/test/java/hello/aop/pointcut/ExecutionTest.java)
+
+### 타입 매칭
+
+* 부모 타입으로 자식 타입 매칭이 된다.
+* 자식 타입에만 있는 메서드는 부모 타입으로 매칭이 되지 않는다.
+
+### 파라미터 매칭
+
+* `(String)`
+    * 정확하게 String 타입 파라미터
+* `()`
+    * 파라미터가 없어야 한다.
+* `(*)`
+    * 정확히 하나의 파라미터, 단 모든 타입을 허용한다.
+* `(*, *)`
+    * 정확히 두 개의 파라미터, 단 모든 타입을 허용한다.
+* `(..)`
+    * 숫자와 무관하게 모든 파라미터, 모든 타입을 허용한다.
+    * 참고로 파라미터가 없어도 된다. `0..*` 로 이해하면 된다.
+* `(String, ..)`
+    * String 타입으로 시작해야 한다.
+    * 숫자와 무관하게 모든 파라미터, 모든 타입을 허용한다.
+    * 예) `(String)`, `(String, Xxx)`, `(String, Xxx, Xxx)` 허용
 
 ## within
 
