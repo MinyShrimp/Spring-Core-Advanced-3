@@ -7,6 +7,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
+/**
+ * 스프링 AOP 구현 3 - 어드바이스 추가
+ */
 @Slf4j
 @Aspect
 public class AspectV3 {

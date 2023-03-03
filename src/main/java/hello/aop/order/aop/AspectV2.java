@@ -6,6 +6,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
+/**
+ * 스프링 AOP 구현 2 - 포인트컷 분리
+ */
 @Slf4j
 @Aspect
 public class AspectV2 {

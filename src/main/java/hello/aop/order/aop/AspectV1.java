@@ -5,6 +5,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
+/**
+ * 스프링 AOP 구현 1 - 시작
+ */
 @Slf4j
 @Aspect
 public class AspectV1 {
