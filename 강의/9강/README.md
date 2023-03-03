@@ -175,7 +175,7 @@ AOP의 대표적인 구현으로 AspectJ 프레임워크가 있다.
 
 로드 타임 위빙은 자바를 실행할 때 특별한 옵션(`java -javaagent`)을 통해 클래스 로더 조작기를 지정해야 하는데, 이 부분이 번거롭고 운영하기 어렵다.
 
-#### 런타임 시점 (프록시)
+### 런타임 시점 (프록시)
 
 ![img_6.png](img_6.png)
 
@@ -243,5 +243,53 @@ AOP는 지금까지 학습한 메서드 실행 위치 뿐만 아니라 다음과
 > 따라서 스프링 AOP가 제공하는 기능을 학습하는 것에 집중하자.
 
 ## AOP 용어 정리
+
+![img_7.png](img_7.png)
+
+#### Join Point - 조인 포인트
+
+* Advice가 적용될 수 있는 위치
+* 메서드 실행, 생성자 호출, 필드 값 접근, static 메서드 접근
+* 스프링 AOP는 프록시 방식을 사용하므로 항상 메서드 실행 시점으로 제한된다.
+
+#### Pointcut - 포인트컷
+
+* JoinPoint 중에서 Advice가 적용될 위치를 선별하는 기능
+* 주로 AspectJ 표현식을 사용해서 지정
+* 스프링 AOP는 프록시 방식을 사용하므로 메서드 실행 지점만 포인트컷으로 선별 가능
+
+#### Target - 타겟
+
+* Advice를 받는 객체, Pointcut으로 결정
+
+#### Advice - 어드바이스
+
+* 부가 기능
+* 특정 JoinPoint에서 Aspect에 의해 취해지는 조치
+* Around, Before, After와 같은 다양한 종류의 Advice가 있음
+
+#### Aspect - 에스펙트
+
+* Pointcut + Advice를 모듈화 한 것
+* 여러 어드바이스와 포인트 컷이 함께 존재
+
+#### Advisor - 어드바이저
+
+* Pointcut 1개 + Advice 1개로 구성
+* 스프링 AOP에서만 사용되는 특별한 용어
+
+#### Weaving - 위빙
+
+* Pointcut으로 결정한 Target의 JoinPoint에 Advice를 적용하는 것
+* Weaving을 통해 핵심 기능 코드에 영향을 주지 않고 부가 기능을 추가 할 수 있음
+* AOP 적용을 위해 Aspect를 객체에 연결한 상태
+    * Compile: AspectJ Compiler
+    * Class Load: JVM에 올라갈 때
+    * Runtime: Proxy, 스프링 AOP는 이 방식만 지원
+
+#### AOP 프록시
+
+* AOP 기능을 구현하기 위해 만든 프록시 객체
+* 스프링 AOP 프록시는 JDK 동적 프록시 또는 CGLIB 프록시이다.
 
 ## 정리
