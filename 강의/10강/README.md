@@ -412,4 +412,96 @@ public class AspectV4 {
 
 ## 스프링 AOP 구현 5 - 어드바이스 순서
 
+### 어드바이스 순서
+
+어드바이스는 기본적으로 **순서를 보장하지 않는다.**
+순서를 지정하고 싶으면 `@Aspect` 적용 단위로 `org.springframework.core.annotation.@Order` 애노테이션을 적용해야 한다.
+
+문제는 이것을 어드바이스 단위가 아니라 **클래스 단위로 적용할 수 있다는 점**이다.
+그래서 지금처럼 하나의 애스펙트에 여러 어드바이스가 있으면 순서를 보장 받을 수 없다.
+따라서 애스펙트를 **별도의 클래스로 분리**해야 한다.
+
+### 예제
+
+#### AspectV5
+
+```java
+/**
+ * Order는 메서드 단위가 아닌 클래스 단위에서만 적용된다.
+ * 때문에, 아래와 같이 각각 클래스를 새로 만들어 어드바이저로 만들어주어야 한다.
+ */
+@Slf4j
+public class AspectV5 {
+
+    // 2 순위
+    @Aspect
+    @Order(2)
+    public static class LogAspect {
+        @Around("hello.aop.order.aop.Pointcuts.allOrder()")
+        public Object doLog(
+                ProceedingJoinPoint joinPoint
+        ) throws Throwable { ... }
+    }
+
+    // 1 순위
+    @Aspect
+    @Order(1)
+    public static class TxAspect {
+        @Around("hello.aop.order.aop.Pointcuts.orderAndService()")
+        public Object doTransaction(
+                ProceedingJoinPoint joinPoint
+        ) throws Throwable { ... }
+    }
+}
+```
+
+#### AopTest
+
+```java
+@Slf4j
+@Import({AspectV5.LogAspect.class, AspectV5.TxAspect.class})
+@SpringBootTest
+public class AopTest { ... }
+```
+
+### 실행 로그
+
+![img_1.png](img_1.png)
+
+#### success
+
+```
+# Client -> doTransaction -> doLog -> OrderService
+[트랜잭션 시작] void hello.aop.order.OrderService.orderItem(String)
+[log] void hello.aop.order.OrderService.orderItem(String)
+[OrderService] 실행
+
+# -> doLog -> OrderRepository
+[log] String hello.aop.order.OrderRepository.save(String)
+[OrderRepository] 실행
+
+# OrderRepository -> doLog 
+# -> OrderService -> doLog -> doTransaction -> Client
+[트랜잭션 커밋] void hello.aop.order.OrderService.orderItem(String)
+[Resource Release] void hello.aop.order.OrderService.orderItem(String)
+```
+
+#### exception
+
+```
+# Client -> doTransaction -> doLog -> OrderService
+[트랜잭션 시작] void hello.aop.order.OrderService.orderItem(String)
+[log] void hello.aop.order.OrderService.orderItem(String)
+[OrderService] 실행
+
+# -> doLog -> OrderRepository
+[log] String hello.aop.order.OrderRepository.save(String)
+[OrderRepository] 실행
+
+# OrderRepository -> doLog 
+# -> OrderService -> doLog -> doTransaction -> Client
+[트랜잭션 롤백] void hello.aop.order.OrderService.orderItem(String)
+[Resource Release] void hello.aop.order.OrderService.orderItem(String)
+```
+
 ## 스프링 AOP 구현 6 - 어드바이스 종류
